@@ -6,6 +6,8 @@ var mainState = {
         this.game.load.image("nave", "img/nave.png");
 		this.game.load.spritesheet("nave2", "img/ship.png",32,32);
 		this.game.load.image("pizza", "img/pizza1.gif");
+		this.game.load.spritesheet("asteroid", "img/asteroid1.png",72,72,19);
+		this.load.bitmapFont('minecraftia','fonts/minecraftia/minecraftia.png','fonts/minecraftia/minecraftia.xml');
         //this.ROTATION_SPEED = 90;
     },
 
@@ -14,6 +16,11 @@ var mainState = {
         //Pongo el color del stage
         this.game.stage.backgroundColor = 0x333333;
 		
+		//Inicializo el segundo en el que inicia la ronda:
+		this.timerStartTime=this.game.time.totalElapsedSeconds();
+		this.timerMaxTime=30;
+		this.timerText= this.game.add.bitmapText(10,10,'minecraftia','Time: '+ getRemainingTime(this.timerMaxTime, this.timerStartTime, this.game));
+		
         //Agrego la nave
         nave = this.game.add.sprite(this.game.width/2, this.game.height-50, "nave2");
         nave.anchor.setTo(0.5,0.5);
@@ -21,10 +28,23 @@ var mainState = {
         //Agrego fisica a la nave
 		this.game.physics.startSystem(Phaser.Physics.ARCADE);
 		//this.game.physics.arcade.gravity.y=400;
-		this.game.physics.arcade.enableBody(nave);
+		this.game.physics.arcade.enableBody(nave)
 		//nave.body.drag.set(100);
 		nave.body.maxVelocity.set(200);
         
+		//Agrego asteroides
+		asteroids= this.game.add.group();
+		for (var z = 0; z < 4; z++) {
+			asteroid= new Asteroid(this.game,0,0);
+			asteroid.animations.add('turn');
+			asteroid.animations.play('turn', 5, true);
+			var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
+			var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
+			asteroid.reset(x,y);
+			asteroid.revive();
+			asteroids.add(asteroid);
+		}
+		
 		//Agrego pizza
 		this.packageCaptured=false;
 		pizzas= this.game.add.group();
@@ -34,7 +54,6 @@ var mainState = {
 		var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
 		this.pizza.reset(x,y);
 		this.pizza.revive();
-		
 		
 		
         //Agrego teclas
@@ -71,29 +90,41 @@ var mainState = {
 		
 		screenWrap(nave);
 		//hitting coins
-		this.game.physics.arcade.overlap(nave,pizzas, coinHit,null,this);
+		this.game.physics.arcade.overlap(nave,pizzas, pickPackage,null,this);
+		
+		this.game.physics.arcade.overlap(nave,asteroids, leavePackage,null,this);
 		
 		if (this.packageCaptured) {
 			this.pizza.x=nave.x+10;
 			this.pizza.y=nave.y-10;
 		}
 		
-    },
-    
-/*     leftInputIsActive: function() {
-        var isActive = false;
-
-        isActive = this.input.keyboard.isDown(Phaser.Keyboard.LEFT);
-        isActive |= (this.game.input.activePointer.isDown &&
-            this.game.input.activePointer.x < this.game.width/4);
-
-        return isActive;
-    } */
-    
+		var remainingTime=getRemainingTime(this.timerMaxTime, this.timerStartTime, this.game);
+		if (remainingTime>0) {
+			this.timerText.text='Time: '+ remainingTime;
+		} else {
+			var scoreboard= new Scoreboard(this.game);
+			scoreboard.show(50);
+		};
+    }
 };
 
-function coinHit(_ship,_package) {
+function getRemainingTime(maxTime, startTime, _game) {
+	return Math.floor(maxTime - (_game.time.totalElapsedSeconds() - startTime));
+
+};
+
+
+function pickPackage(_ship,_package) {
 	this.packageCaptured=true;
+};
+
+function leavePackage(_ship,_asteroid) {
+	if (this.packageCaptured) {
+		this.packageCaptured=false;
+		this.pizza.x=_asteroid.x+15;
+		this.pizza.y=_asteroid.y-15;
+	}
 };
 
 function screenWrap (sprite) {
