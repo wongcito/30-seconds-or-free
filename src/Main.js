@@ -1,3 +1,4 @@
+// var game = new Phaser.Game(window.innerWidth,window.innerHeight,Phaser.AUTO,'')
 var game = new Phaser.Game(400, 400, Phaser.AUTO, "gameDiv");
 
 var mainState = {
@@ -103,10 +104,17 @@ var mainState = {
 		if (remainingTime>0) {
 			this.timerText.text='Time: '+ remainingTime;
 		} else {
+			nave.kill();
+			this.pizza.kill();
 			var scoreboard= new Scoreboard(this.game);
 			scoreboard.show(50);
 		};
-    }
+    },
+	shutdown: function() {
+		asteroids.destroy();
+		pizzas.destroy();
+		this.score=0;		
+	}
 };
 
 function getRemainingTime(maxTime, startTime, _game) {
