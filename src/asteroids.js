@@ -1,5 +1,5 @@
 var Asteroid= function(game, x, y, key, frame,_maxTime, _points, _type) {
-	key= 'asteroid';
+	key= 'asteroid'+_type;
 	Phaser.Sprite.call(this, game, x, y, key, frame);
 	
 	this.scale.setTo(0.5);

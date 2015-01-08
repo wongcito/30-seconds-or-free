@@ -1,5 +1,5 @@
 var Package= function(game, x, y, key, frame, _type) {
-	key= 'pizza';
+	key= 'pizza'+_type;
 	Phaser.Sprite.call(this, game, x, y, key, frame);
 	
 	this.scale.setTo(0.5);

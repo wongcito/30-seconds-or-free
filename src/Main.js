@@ -6,8 +6,13 @@ var mainState = {
     preload: function() {  
         this.game.load.image("nave", "img/nave.png");
 		this.game.load.spritesheet("nave2", "img/ship.png",32,32);
+		//many pizzas:
 		this.game.load.image("pizza", "img/pizza1.gif");
+		this.game.load.image("pizza2", "img/pizza2.png");
+		this.game.load.image("pizza3", "img/pizza3.png");
 		this.game.load.spritesheet("asteroid", "img/asteroid1.png",72,72,19);
+		this.game.load.spritesheet("asteroid2", "img/asteroid2.png",72,72,19);
+		this.game.load.spritesheet("asteroid3", "img/asteroid3.png",72,72,19);
 		this.load.bitmapFont('minecraftia','fonts/minecraftia/minecraftia.png','fonts/minecraftia/minecraftia.xml');
         //this.ROTATION_SPEED = 90;
     },
@@ -19,7 +24,7 @@ var mainState = {
 		
 		//Inicializo el segundo en el que inicia la ronda:
 		this.timerStartTime=this.game.time.totalElapsedSeconds();
-		this.timerMaxTime=300;
+		this.timerMaxTime=30;
 		this.timerText= this.game.add.bitmapText(10,10,'minecraftia','Time: '+ getRemainingTime(this.timerMaxTime, this.timerStartTime, this.game));
 		
         //Agrego la nave
@@ -37,12 +42,13 @@ var mainState = {
 		asteroids= this.game.add.group();
 		for (var z = 0; z < 4; z++) {
 			//auxiliar
-			var _lifespan=this.game.rnd.integerInRange(5,20)
+			var _lifespan=this.game.rnd.integerInRange(30,100)
 			var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
 			var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
+			var type=this.game.rnd.integerInRange(2,3);
 			
 			//generation:
-			asteroid= new Asteroid(this.game,x,y, undefined, undefined, _lifespan, 100, 1);
+			asteroid= new Asteroid(this.game,x,y, undefined, undefined, _lifespan, 100, type);
 			asteroid.animations.add('turn');
 			asteroid.animations.play('turn', 5, true);
 			asteroids.add(asteroid);
@@ -52,13 +58,16 @@ var mainState = {
 		this.packageCaptured=false;
 		this.packageCapturedNumber=-1;
 		pizzas= this.game.add.group();
-		this.pizza= new Package(this.game,0,0,undefined, undefined, 1);
-		pizzas.add(this.pizza);
-		var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
-		var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
-		this.pizza.reset(x,y);
-		this.pizza.revive();
 		
+		for (var z = 0; z < 4; z++) {
+			var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
+			var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
+			var type=this.game.rnd.integerInRange(2,3);
+			this.pizza= new Package(this.game,x,y,undefined, undefined, type);
+			pizzas.add(this.pizza);
+			//this.pizza.reset(x,y);
+			//this.pizza.revive();
+		};
 		
         //Agrego teclas
         this.game.input.keyboard.addKeyCapture([
@@ -143,10 +152,13 @@ function pickPackage(_ship,_package) {
 function leavePackage(_ship,_asteroid) {
 	if (this.packageCaptured && this.packageCapturedNumber>=0) {
 		_pizza= pizzas.getChildAt(this.packageCapturedNumber);
-		this.packageCaptured=false;
-		this.packageCapturedNumber=-1;
-		_pizza.x=_asteroid.x+15;
-		_pizza.y=_asteroid.y-15;
+		//debemos garantizar que solo podemos dejar la pizza que el cliente ha pedido (es decir: que sea del mismo tipo)
+		if (_pizza.type==_asteroid.type) {
+			this.packageCaptured=false;
+			this.packageCapturedNumber=-1;
+			_pizza.x=_asteroid.x+15;
+			_pizza.y=_asteroid.y-15;
+		};
 	}
 };
 
