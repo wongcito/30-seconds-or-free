@@ -1,4 +1,4 @@
-var Asteroid= function(game, x, y, key, frame) {
+var Asteroid= function(game, x, y, key, frame,_maxTime, _points, _type) {
 	key= 'asteroid';
 	Phaser.Sprite.call(this, game, x, y, key, frame);
 	
@@ -21,6 +21,10 @@ var Asteroid= function(game, x, y, key, frame) {
 	//this executes onRevived when the Asteroid revives:
 	this.events.onRevived.add(this.onRevived,this);
 	//
+	//this adds the main properties of the clients:
+	this.type=_type;
+	this.lifespan=_maxTime*1000; //seconds to milliseconds.
+	this.points=_points;
 	
 };
 

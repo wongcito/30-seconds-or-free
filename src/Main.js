@@ -19,7 +19,7 @@ var mainState = {
 		
 		//Inicializo el segundo en el que inicia la ronda:
 		this.timerStartTime=this.game.time.totalElapsedSeconds();
-		this.timerMaxTime=30;
+		this.timerMaxTime=300;
 		this.timerText= this.game.add.bitmapText(10,10,'minecraftia','Time: '+ getRemainingTime(this.timerMaxTime, this.timerStartTime, this.game));
 		
         //Agrego la nave
@@ -36,20 +36,23 @@ var mainState = {
 		//Agrego asteroides
 		asteroids= this.game.add.group();
 		for (var z = 0; z < 4; z++) {
-			asteroid= new Asteroid(this.game,0,0);
-			asteroid.animations.add('turn');
-			asteroid.animations.play('turn', 5, true);
+			//auxiliar
+			var _lifespan=this.game.rnd.integerInRange(5,20)
 			var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
 			var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
-			asteroid.reset(x,y);
-			asteroid.revive();
+			
+			//generation:
+			asteroid= new Asteroid(this.game,x,y, undefined, undefined, _lifespan, 100, 1);
+			asteroid.animations.add('turn');
+			asteroid.animations.play('turn', 5, true);
 			asteroids.add(asteroid);
 		}
 		
 		//Agrego pizza
 		this.packageCaptured=false;
+		this.packageCapturedNumber=-1;
 		pizzas= this.game.add.group();
-		this.pizza= new Package(this.game,0,0);
+		this.pizza= new Package(this.game,0,0,undefined, undefined, 1);
 		pizzas.add(this.pizza);
 		var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
 		var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
@@ -65,6 +68,9 @@ var mainState = {
             Phaser.Keyboard.DOWN
         ]);
 		
+		//inicializo el score:
+		this.score=0;
+		
 		//  Game input
 		cursors = game.input.keyboard.createCursorKeys();
 
@@ -72,6 +78,7 @@ var mainState = {
 
     update: function() {
         
+		//lógica de control de la nave con las flechas.
 		if (cursors.up.isDown) {
 			game.physics.arcade.accelerationFromRotation(nave.rotation, 200, nave.body.acceleration);
 			// Show the frame from the spritesheet with the engine on
@@ -90,22 +97,27 @@ var mainState = {
 		}
 		
 		screenWrap(nave);
-		//hitting coins
+		//colisiones con packetes (grupo "pizzas")
 		this.game.physics.arcade.overlap(nave,pizzas, pickPackage,null,this);
 		
+		//colisiones con asteroides (grupo "asteroids")
 		this.game.physics.arcade.overlap(nave,asteroids, leavePackage,null,this);
 		
-		if (this.packageCaptured) {
-			this.pizza.x=nave.x+10;
-			this.pizza.y=nave.y-10;
+		//si se ha capturado una pizza, esta debe aparecer junto con la nave:
+		if (this.packageCaptured && this.packageCapturedNumber>=0) {
+			_pizza= pizzas.getChildAt(this.packageCapturedNumber);
+			_pizza.x=nave.x+10;
+			_pizza.y=nave.y-10;
 		}
 		
+		//lógica de timer global (debe ser cambiado por un timer para cada paquete).
 		var remainingTime=getRemainingTime(this.timerMaxTime, this.timerStartTime, this.game);
 		if (remainingTime>0) {
 			this.timerText.text='Time: '+ remainingTime;
 		} else {
 			nave.kill();
-			this.pizza.kill();
+			pizzas.destroy();
+			asteroids.destroy();
 			var scoreboard= new Scoreboard(this.game);
 			scoreboard.show(50);
 		};
@@ -124,14 +136,17 @@ function getRemainingTime(maxTime, startTime, _game) {
 
 
 function pickPackage(_ship,_package) {
+	this.packageCapturedNumber= pizzas.getChildIndex(_package);
 	this.packageCaptured=true;
 };
 
 function leavePackage(_ship,_asteroid) {
-	if (this.packageCaptured) {
+	if (this.packageCaptured && this.packageCapturedNumber>=0) {
+		_pizza= pizzas.getChildAt(this.packageCapturedNumber);
 		this.packageCaptured=false;
-		this.pizza.x=_asteroid.x+15;
-		this.pizza.y=_asteroid.y-15;
+		this.packageCapturedNumber=-1;
+		_pizza.x=_asteroid.x+15;
+		_pizza.y=_asteroid.y-15;
 	}
 };
 
