@@ -27,6 +27,10 @@ var mainState = {
 		this.timerMaxTime=30;
 		this.timerText= this.game.add.bitmapText(10,10,'minecraftia','Time: '+ getRemainingTime(this.timerMaxTime, this.timerStartTime, this.game));
 		
+		//Inicializo el score:
+		this.score=0;
+		this.scoreText= this.game.add.bitmapText(10,50,'minecraftia','Score: '+this.score);
+		
         //Agrego la nave
         nave = this.game.add.sprite(this.game.width/2, this.game.height-50, "nave2");
         nave.anchor.setTo(0.5,0.5);
@@ -42,19 +46,20 @@ var mainState = {
 		asteroids= this.game.add.group();
 		for (var z = 0; z < 4; z++) {
 			//auxiliar
-			var _lifespan=this.game.rnd.integerInRange(30,100)
+			var _lifespan=this.game.rnd.integerInRange(10,30)
 			var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
 			var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
+			var score= this.game.rnd.integerInRange(50,100);
 			var type=this.game.rnd.integerInRange(2,3);
 			
 			//generation:
-			asteroid= new Asteroid(this.game,x,y, undefined, undefined, _lifespan, 100, type);
+			asteroid= new Asteroid(this.game,x,y, undefined, undefined, _lifespan, score, type);
 			asteroid.animations.add('turn');
-			asteroid.animations.play('turn', 5, true);
+			asteroid.animations.play('turn', 2, true);
 			asteroids.add(asteroid);
 		}
 		
-		//Agrego pizza
+		//Agrego pizzas
 		this.packageCaptured=false;
 		this.packageCapturedNumber=-1;
 		pizzas= this.game.add.group();
@@ -76,9 +81,6 @@ var mainState = {
             Phaser.Keyboard.UP,
             Phaser.Keyboard.DOWN
         ]);
-		
-		//inicializo el score:
-		this.score=0;
 		
 		//  Game input
 		cursors = game.input.keyboard.createCursorKeys();
@@ -106,7 +108,7 @@ var mainState = {
 		}
 		
 		screenWrap(nave);
-		//colisiones con packetes (grupo "pizzas")
+		//colisiones con paquetes (grupo "pizzas")
 		this.game.physics.arcade.overlap(nave,pizzas, pickPackage,null,this);
 		
 		//colisiones con asteroides (grupo "asteroids")
@@ -124,40 +126,72 @@ var mainState = {
 		if (remainingTime>0) {
 			this.timerText.text='Time: '+ remainingTime;
 		} else {
+			//si se acaba el tiempo: matar todo.
+			//ToDo: matar los contadores
 			nave.kill();
 			pizzas.destroy();
 			asteroids.destroy();
 			var scoreboard= new Scoreboard(this.game);
 			scoreboard.show(50);
 		};
+		
+		//lógica de panel con puntaje:
+		this.scoreText.text= 'Score: '+this.score;
+		
+		//para cada asteroide: dibujamos el contador al lado
+		asteroids.forEachAlive(drawLifespan, this);
     },
 	shutdown: function() {
-		asteroids.destroy();
-		pizzas.destroy();
-		this.score=0;		
+		asteroids.destroy(true);
+		pizzas.destroy(true);
+		this.score=0;
 	}
 };
 
 function getRemainingTime(maxTime, startTime, _game) {
 	return Math.floor(maxTime - (_game.time.totalElapsedSeconds() - startTime));
-
 };
 
 
 function pickPackage(_ship,_package) {
-	this.packageCapturedNumber= pizzas.getChildIndex(_package);
-	this.packageCaptured=true;
+	if (_package.available) {
+		this.packageCapturedNumber= pizzas.getChildIndex(_package);
+		this.packageCaptured=true;
+	};
+	
+};
+
+function drawLifespan(_package) {
+	if (_package.lifespan>=0) _package.lifespanText.text=Math.floor(_package.lifespan/1000);
+	
 };
 
 function leavePackage(_ship,_asteroid) {
 	if (this.packageCaptured && this.packageCapturedNumber>=0) {
 		_pizza= pizzas.getChildAt(this.packageCapturedNumber);
-		//debemos garantizar que solo podemos dejar la pizza que el cliente ha pedido (es decir: que sea del mismo tipo)
-		if (_pizza.type==_asteroid.type) {
+		//debemos garantizar que solo podemos dejar la pizza 
+		//que el cliente ha pedido (es decir: que sea del mismo tipo)
+		//también: ese asteroide no puede tener pizza ya.
+		if (_pizza.type==_asteroid.type && _asteroid.packageDeliveredNum==-1) {
+			//al dejar la pizza:
+			//se aumenta el puntaje, 
+			this.score+=_asteroid.points;
+			
+			//se apunta el paquete que fue entregado en el asteroide:
+			_asteroid.packageDeliveredNum=this.packageCapturedNumber;
+			
+			//se termina de contar el tiempo al destino:
+			_asteroid.lifespan=-1;
+						
+			//se reinicializan los marcadores que indican qué paquete se tiene en la nave
 			this.packageCaptured=false;
 			this.packageCapturedNumber=-1;
+			//se ubica el paquete alrededor del destino
 			_pizza.x=_asteroid.x+15;
 			_pizza.y=_asteroid.y-15;
+			
+			//se prohíbe recoger el paquete otra vez:
+			_pizza.available=false;
 		};
 	}
 };

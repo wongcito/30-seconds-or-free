@@ -24,6 +24,8 @@ var Package= function(game, x, y, key, frame, _type) {
 	//this adds the main properties of the packages:
 	this.type=_type;
 	
+	//flag to tell if package is able to be picked up:
+	this.available=true;
 	
 	
 };
