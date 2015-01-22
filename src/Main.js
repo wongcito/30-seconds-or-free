@@ -14,8 +14,8 @@ var mainState = {
 		this.game.load.spritesheet("asteroid2", "img/asteroid2.png",72,72,19);
 		this.game.load.spritesheet("asteroid3", "img/asteroid3.png",72,72,19);
 		this.game.load.image("client1", "img/client1.jpeg");
-		this.game.load.image("client2", "img/client2.jpeg");
-		this.game.load.image("client3", "img/client3.jpeg");
+		this.game.load.image("client2", "img/client2.png");
+		this.game.load.image("client3", "img/client3.png");
 		this.load.bitmapFont('minecraftia','fonts/minecraftia/minecraftia.png','fonts/minecraftia/minecraftia.xml');
 		this.game.load.spritesheet("explosion", "img/explosion.png",100,100,74);
         //this.ROTATION_SPEED = 90;
@@ -79,10 +79,10 @@ var mainState = {
 		this.packageCapturedNumber=-1;
 		pizzas= this.game.add.group();
 		
-		for (var z = 0; z < 4; z++) {
+		for (var z = 0; z < 2; z++) {
 			var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
 			var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
-			var type=this.game.rnd.integerInRange(2,3);
+			var type= clients.getAt(z).type; //así hay un tipo de pizza para cada tipo de cliente.
 			this.pizza= new Package(this.game,x,y,undefined, undefined, type);
 			pizzas.add(this.pizza);
 		};
@@ -142,11 +142,7 @@ var mainState = {
 		} else {
 			//si se acaba el tiempo: matar todo.
 			//ToDo: matar los contadores
-			nave.kill();
-			pizzas.destroy();
-			asteroids.destroy();
-			var scoreboard= new Scoreboard(this.game);
-			scoreboard.show(50);
+			GameOver();
 		};
 		
 		//lógica de panel con puntaje:
@@ -166,14 +162,20 @@ function getRemainingTime(maxTime, startTime, _game) {
 	return Math.floor(maxTime - (_game.time.totalElapsedSeconds() - startTime));
 };
 
+function GameOver(){
+	this.packageCaptured=false;
+	pizzas.destroy(true);
+	asteroids.destroy(true);
+	nave.kill();
+	var scoreboard= new Scoreboard(this.game);
+	scoreboard.show(50);
+};
 
 function pickPackage(_ship,_package) {
 	if (_package.available) {
 		this.packageCapturedNumber= pizzas.getChildIndex(_package);
-	
-	true;
+		this.packageCaptured=true;
 	};
-	
 };
 
 function drawLifespan(_client) {
@@ -188,11 +190,7 @@ function hitAsteroid(_ship,_asteroid) {
 	explosion.anchor.setTo(0.5,0.5);
 	explosion.animations.add('explode');
 	explosion.animations.play("explode", 30, false, true);
-	nave.kill();
-	pizzas.destroy();
-	asteroids.destroy();
-	var scoreboard= new Scoreboard(this.game);
-	scoreboard.show(50);
+	GameOver();
 };
 
 function leavePackage(_ship,_client) {

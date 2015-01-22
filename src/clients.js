@@ -39,4 +39,5 @@ Client.prototype.onRevived= function() {
 
 Client.prototype.onKilled= function() {
 	this.animations.frame=0;
-};
+	this.lifespanText="";
+}; 
