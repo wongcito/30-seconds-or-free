@@ -1,5 +1,5 @@
-var Package= function(game, x, y, key, frame) {
-	key= 'pizza';
+var Package= function(game, x, y, key, frame, _type) {
+	key= 'pizza'+_type;
 	Phaser.Sprite.call(this, game, x, y, key, frame);
 	
 	this.scale.setTo(0.5);
@@ -20,7 +20,13 @@ var Package= function(game, x, y, key, frame) {
 	this.events.onKilled.add(this.onKilled,this);
 	//this executes onRevived when the Package revives:
 	this.events.onRevived.add(this.onRevived,this);
-	//
+	
+	//this adds the main properties of the packages:
+	this.type=_type;
+	
+	//flag to tell if package is able to be picked up:
+	this.available=true;
+	
 	
 };
 
