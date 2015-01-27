@@ -6,12 +6,7 @@ var mainState = {
     preload: function() {  
         this.game.load.image("nave", "img/nave.png");
 		this.game.load.spritesheet("nave2", "img/ship.png",32,32);
-<<<<<<< HEAD
-        this.game.load.image("base", "img/base.png", 200,375);
-||||||| merged common ancestors
-=======
 		//many pizzas:
->>>>>>> 03d3cbd3b6bc82807c70b185056057e882e6802c
 		this.game.load.image("pizza", "img/pizza1.gif");
 		this.game.load.image("pizza2", "img/pizza2.png");
 		this.game.load.image("pizza3", "img/pizza3.png");
@@ -41,7 +36,7 @@ var mainState = {
 		this.scoreText= this.game.add.bitmapText(10,50,'minecraftia','Score: '+this.score);
 		
         //Agrego la nave
-        nave = this.game.add.sprite(this.game.width/2-50, this.game.height-50, "nave2");
+        nave = this.game.add.sprite(this.game.width/2, this.game.height-50, "nave2");
         nave.anchor.setTo(0.5,0.5);
 		nave.angle = 45;
         //Agrego fisica a la nave
@@ -50,9 +45,6 @@ var mainState = {
 		this.game.physics.arcade.enableBody(nave)
 		//nave.body.drag.set(100);
 		nave.body.maxVelocity.set(200);
-        
-        //Agrego la base
-        base = this.game.add.sprite(this.game.width/2, this.game.height-75, "base");
         
 		//Agrego asteroides
 		asteroids= this.game.add.group();
@@ -82,35 +74,10 @@ var mainState = {
 			clients.add(client);
 		}
 		
-<<<<<<< HEAD
-		//Agrego pizza en la base cuando alguien la pida.
-||||||| merged common ancestors
-		//Agrego pizza
-=======
 		//Agrego pizzas
->>>>>>> 03d3cbd3b6bc82807c70b185056057e882e6802c
 		this.packageCaptured=false;
 		this.packageCapturedNumber=-1;
 		pizzas= this.game.add.group();
-<<<<<<< HEAD
-		if (onmousedown) {
-        
-        this.pizza= new Package(this.game,0,0);
-		pizzas.add(this.pizza);
-		var x= 200;
-		var y= 350;
-		this.pizza.reset(x,y);
-		this.pizza.revive();
-        }
-||||||| merged common ancestors
-		this.pizza= new Package(this.game,0,0);
-		pizzas.add(this.pizza);
-		var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
-		var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
-		this.pizza.reset(x,y);
-		this.pizza.revive();
-		
-=======
 		
 		for (var z = 0; z < 2; z++) {
 			var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
@@ -119,7 +86,6 @@ var mainState = {
 			this.pizza= new Package(this.game,x,y,undefined, undefined, type);
 			pizzas.add(this.pizza);
 		};
->>>>>>> 03d3cbd3b6bc82807c70b185056057e882e6802c
 		
         //Agrego teclas
         this.game.input.keyboard.addKeyCapture([
