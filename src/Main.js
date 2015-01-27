@@ -6,6 +6,7 @@ var mainState = {
     preload: function() {  
         this.game.load.image("nave", "img/nave.png");
 		this.game.load.spritesheet("nave2", "img/ship.png",32,32);
+        this.game.load.image("base", "img/base.png", 200,375);
 		this.game.load.image("pizza", "img/pizza1.gif");
 		this.game.load.spritesheet("asteroid", "img/asteroid1.png",72,72,19);
 		this.load.bitmapFont('minecraftia','fonts/minecraftia/minecraftia.png','fonts/minecraftia/minecraftia.xml');
@@ -23,7 +24,7 @@ var mainState = {
 		this.timerText= this.game.add.bitmapText(10,10,'minecraftia','Time: '+ getRemainingTime(this.timerMaxTime, this.timerStartTime, this.game));
 		
         //Agrego la nave
-        nave = this.game.add.sprite(this.game.width/2, this.game.height-50, "nave2");
+        nave = this.game.add.sprite(this.game.width/2-50, this.game.height-50, "nave2");
         nave.anchor.setTo(0.5,0.5);
 		nave.angle = 45;
         //Agrego fisica a la nave
@@ -32,6 +33,9 @@ var mainState = {
 		this.game.physics.arcade.enableBody(nave)
 		//nave.body.drag.set(100);
 		nave.body.maxVelocity.set(200);
+        
+        //Agrego la base
+        base = this.game.add.sprite(this.game.width/2, this.game.height-75, "base");
         
 		//Agrego asteroides
 		asteroids= this.game.add.group();
@@ -46,16 +50,18 @@ var mainState = {
 			asteroids.add(asteroid);
 		}
 		
-		//Agrego pizza
+		//Agrego pizza en la base cuando alguien la pida.
 		this.packageCaptured=false;
 		pizzas= this.game.add.group();
-		this.pizza= new Package(this.game,0,0);
+		if (onmousedown) {
+        
+        this.pizza= new Package(this.game,0,0);
 		pizzas.add(this.pizza);
-		var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
-		var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
+		var x= 200;
+		var y= 350;
 		this.pizza.reset(x,y);
 		this.pizza.revive();
-		
+        }
 		
         //Agrego teclas
         this.game.input.keyboard.addKeyCapture([
