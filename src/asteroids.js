@@ -21,7 +21,6 @@ var Asteroid= function(game, x, y, key, frame) {
 	//this executes onRevived when the Asteroid revives:
 	this.events.onRevived.add(this.onRevived,this);
 	//
-	
 };
 
 Asteroid.prototype = Object.create(Phaser.Sprite.prototype);
