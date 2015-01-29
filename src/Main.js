@@ -1,5 +1,5 @@
 // var game = new Phaser.Game(window.innerWidth,window.innerHeight,Phaser.AUTO,'')
-var game = new Phaser.Game(400, 400, Phaser.AUTO, "gameDiv");
+var game = new Phaser.Game(window.innerWidth,window.innerHeight, Phaser.AUTO, "gameDiv");
 
 var mainState = {
 
@@ -27,6 +27,7 @@ var mainState = {
         
         //Pongo el color del stage
         this.game.stage.backgroundColor = 0x333333;
+		//this.game.world.bounds= new Phaser.Rectangle(0,0,this.game.width + 300, this.game.height);
 		
 		//Inicializo el segundo en el que inicia la ronda:
 		this.timerStartTime=this.game.time.totalElapsedSeconds();
@@ -185,10 +186,10 @@ function GameOver(){
 };
 
 function pickPackage(_ship,_package) {
-	if (_package.available) {
+	if (_package.available && !this.packageCaptured) {
 		this.packageCapturedNumber= pizzas.getChildIndex(_package);
 		this.packageCaptured=true;
-		_package.available=false;
+		//_package.available=false;
 	};
 };
 
