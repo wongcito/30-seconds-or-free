@@ -4,6 +4,8 @@ var game = new Phaser.Game(400, 400, Phaser.AUTO, "gameDiv");
 var mainState = {
 
     preload: function() {  
+	
+		//aquí cargamos todos los assets: imagenes.
         this.game.load.image("nave", "img/nave.png");
 		this.game.load.spritesheet("nave2", "img/ship.png",32,32);
 		//many pizzas:
@@ -49,12 +51,12 @@ var mainState = {
 		//Agrego asteroides
 		asteroids= this.game.add.group();
 		for (var z = 0; z < 4; z++) {
-			//auxiliar
-			var _lifespan=this.game.rnd.integerInRange(10,30)
+			//generamos una posición aleatoria para cada asteroide:
 			var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
 			var y= this.game.rnd.integerInRange(50,this.game.world.height-100);			
 			//generation:
 			asteroid= new Asteroid(this.game,x,y);
+			//le metemos animaciones para que "dé vueltas"
 			asteroid.animations.add('turn');
 			asteroid.animations.play('turn', 2, true);
 			asteroids.add(asteroid);
@@ -62,14 +64,18 @@ var mainState = {
 
 		clients= this.game.add.group();
 		for (var z = 0; z < 2; z++) {
-			//auxiliar
-			var _lifespan=this.game.rnd.integerInRange(10,30)
+			//posición aleatoria (falta poner que no sea demasiado cerca a asteroides:
 			var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
 			var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
+			//cada cliente tiene:
+			//puntaje para darle al jugador cuando le entrega la pizza
+			//un tipo de pizza que ha "pedido"
+			//el tiempo que tiene el cliente antes de que desaparezca
 			var score= this.game.rnd.integerInRange(50,100);
 			var type=this.game.rnd.integerInRange(2,3);
+			var _lifespan=this.game.rnd.integerInRange(10,30)
 			
-			//generation:
+			//acá generamos el cliente y lo añadimos al grupo de clientes:
 			client= new Client(this.game,x,y, undefined, undefined, _lifespan, score, type);
 			clients.add(client);
 		}
@@ -80,14 +86,18 @@ var mainState = {
 		pizzas= this.game.add.group();
 		
 		for (var z = 0; z < 2; z++) {
+			//posición aleatoria:
 			var x= this.game.rnd.integerInRange(50,this.game.world.width-100);
 			var y= this.game.rnd.integerInRange(50,this.game.world.height-100);
-			var type= clients.getAt(z).type; //así hay un tipo de pizza para cada tipo de cliente.
+			//le asignamos a la cada pizza el tipo de algún cliente existente.
+			//así siempre se puede "ganar".
+			var type= clients.getAt(z).type; 
+			//generamos pizzas:
 			this.pizza= new Package(this.game,x,y,undefined, undefined, type);
 			pizzas.add(this.pizza);
 		};
 		
-        //Agrego teclas
+        //Agrego teclas de control de la nave:
         this.game.input.keyboard.addKeyCapture([
             Phaser.Keyboard.LEFT,
             Phaser.Keyboard.RIGHT,
@@ -120,16 +130,19 @@ var mainState = {
 			nave.body.angularVelocity = 0;
 		}
 		
+		//esta función hace que la nave pueda desplazarse por los límites de la pantalla:
 		screenWrap(nave);
 		//colisiones con paquetes (grupo "pizzas")
 		this.game.physics.arcade.overlap(nave,pizzas, pickPackage,null,this);
 		
-		//colisiones con asteroides (grupo "asteroids")
+		//cuando la nave toca un asteroide: muere en hitAsteroid
 		this.game.physics.arcade.overlap(nave,asteroids, hitAsteroid,null,this);
+		
+		//cuando la nave toca a un cliente: deja paquetes con leavePackage
 		this.game.physics.arcade.overlap(nave,clients, leavePackage,null,this);
 		
 		//si se ha capturado una pizza, esta debe aparecer junto con la nave:
-		if (this.packageCaptured && this.packageCapturedNumber>=0) {
+		if (this.packageCaptured && this.packageCapturedNumber>=0 && nave.alive) {
 			_pizza= pizzas.getChildAt(this.packageCapturedNumber);
 			_pizza.x=nave.x+10;
 			_pizza.y=nave.y-10;
@@ -175,6 +188,7 @@ function pickPackage(_ship,_package) {
 	if (_package.available) {
 		this.packageCapturedNumber= pizzas.getChildIndex(_package);
 		this.packageCaptured=true;
+		_package.available=false;
 	};
 };
 
