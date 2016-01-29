@@ -108,7 +108,7 @@ var mainState = {
 		
 		//  Game input
 		cursors = game.input.keyboard.createCursorKeys();
-
+		
     },
 
     update: function() {
@@ -130,6 +130,13 @@ var mainState = {
 		} else {
 			nave.body.angularVelocity = 0;
 		}
+		
+		//ahora van los controles con click:
+		if (this.game.input.activePointer.isDown){
+			
+		}
+		
+		
 		
 		//esta función hace que la nave pueda desplazarse por los límites de la pantalla:
 		screenWrap(nave);
